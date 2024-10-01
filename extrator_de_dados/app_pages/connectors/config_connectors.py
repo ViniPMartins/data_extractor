@@ -11,4 +11,5 @@ def get_image_path(image_name):
 connectors = {
     0: {"nome":"Banco Postgres", "logo":get_image_path("postgres_logo.png"), "config":configure_postgres_connector},
     1: {"nome":"Banco Mysql", "logo":get_image_path("mysql_logo.png"), "config":configure_mysql_connector},
-    2: {"nome":"Arquivo CSV", "logo":get_image_path("csv_logo.png"), "config":configure_csv_connector}}
+    2: {"nome":"Arquivo CSV", "logo":get_image_path("csv_logo.png"), "config":configure_csv_connector},
+}
