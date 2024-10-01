@@ -7,6 +7,7 @@ def configure_csv_connector():
 
     # Formulário para configurar dados de conexão do Postgres como destino
     with st.form("csv_connector_form"):
+        name = st.text_input("Nome da Conexão", placeholder="Ex: Arquivo CSV")
         path = st.text_input("File Path", placeholder="ex: C://usuario/meu_arquivo.csv")
         
         # Botão para submeter o formulário

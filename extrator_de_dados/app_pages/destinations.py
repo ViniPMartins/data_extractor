@@ -5,7 +5,6 @@ from .connectors.config_connectors import connectors
 def show_destination_page():
     st.title("Selecione o Destino dos Dados")
 
-    # Botão com logo do Postgres
     n_connectors = len(connectors.keys())
     n_rows = int(((3 - (n_connectors%3)) + n_connectors) / 3 if n_connectors % 3 != 0 else n_connectors / 3)
 

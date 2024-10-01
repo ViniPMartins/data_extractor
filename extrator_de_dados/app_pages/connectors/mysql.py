@@ -7,6 +7,7 @@ def configure_mysql_connector():
 
     # Formulário para configurar dados de conexão do Postgres como destino
     with st.form("mysql_connector_form"):
+        name = st.text_input("Nome da Conexão", placeholder="Ex: Mysql")
         host = st.text_input("Host", placeholder="ex: localhost")
         port = st.text_input("Porta", placeholder="ex: 5432")
         database = st.text_input("Banco de Dados", placeholder="ex: my_database")
