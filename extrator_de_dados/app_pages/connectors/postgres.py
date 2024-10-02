@@ -1,7 +1,7 @@
 import streamlit as st
 
 # Página de configuração de destinos de dados
-@st.dialog("Configuração de Conexão - Postgres")
+@st.dialog("Configuração de Conexão - Postgres", width='large')
 def configure_postgres_connector():
     #st.header("Configuração do Destino - Postgres")
 
@@ -19,3 +19,14 @@ def configure_postgres_connector():
 
         if submit_button:
             st.success(f"Conexão configurada: banco de dados {database} em {host}:{port} com o usuário {user}!")
+            return {
+                'name':name,
+                'type':'postgres',
+                'config':{
+                    'host':host,
+                    'port':port,
+                    'databse':database,
+                    'user':user,
+                    'password':password
+                }
+            }

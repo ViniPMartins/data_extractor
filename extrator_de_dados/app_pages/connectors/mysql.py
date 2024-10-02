@@ -19,3 +19,14 @@ def configure_mysql_connector():
 
         if submit_button:
             st.success(f"Conexão configurada: banco de dados {database} em {host}:{port} com o usuário {user}!")
+            return {
+                'name':name,
+                'type':'mysql',
+                'config':{
+                    'host':host,
+                    'port':port,
+                    'databse':database,
+                    'user':user,
+                    'password':password
+                }
+            }

@@ -15,3 +15,10 @@ def configure_csv_connector():
 
         if submit_button:
             st.success(f"Conexão configurada: Conexão com arquivo {path} configurada")
+            return {
+                'name':name,
+                'type':'csv',
+                'config':{
+                    'path':path
+                }
+            }
