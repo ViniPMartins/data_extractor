@@ -2,31 +2,29 @@ import streamlit as st
 
 # Página de configuração de destinos de dados
 @st.dialog("Configuração de Conexão - Postgres", width='large')
-def configure_postgres_connector():
-    #st.header("Configuração do Destino - Postgres")
+def configure_postgres_connector(db_conn, table, params: dict = {}):
 
-    # Formulário para configurar dados de conexão do Postgres como destino
-    with st.form("postgres_connector_form"):
-        name = st.text_input("Nome da Conexão", placeholder="Ex: Postgres")
-        host = st.text_input("Host", placeholder="ex: localhost")
-        port = st.text_input("Porta", placeholder="ex: 5432")
-        database = st.text_input("Banco de Dados", placeholder="ex: my_database")
-        user = st.text_input("Usuário", placeholder="ex: postgres")
-        password = st.text_input("Senha", type="password")
+    name = st.text_input("Nome da Conexão", value=params.get('name', ''), placeholder="Ex: database name")
+    host = st.text_input("Host", value=params.get('host', ''), placeholder="ex: localhost")
+    port = st.text_input("Porta", value=params.get('port', ''), placeholder="ex: 5432")
+    database = st.text_input("Banco de Dados", value=params.get('database', ''), placeholder="ex: my_database")
+    user = st.text_input("Usuário", value=params.get('user', ''), placeholder="ex: user")
+    password = st.text_input("Senha", value=params.get('password', ''), type="password")
 
-        # Botão para submeter o formulário
-        submit_button = st.form_submit_button("Conectar")
-
-        if submit_button:
-            st.success(f"Conexão configurada: banco de dados {database} em {host}:{port} com o usuário {user}!")
-            return {
+    if st.button("Conectar"):
+        st.success(f"Conexão configurada: banco de dados {database} em {host}:{port} com o usuário {user}!")
+        data = {
+            'type':'postgres',
+            'config':{
                 'name':name,
-                'type':'postgres',
-                'config':{
-                    'host':host,
-                    'port':port,
-                    'databse':database,
-                    'user':user,
-                    'password':password
-                }
+                'host':host,
+                'port':port,
+                'database':database,
+                'user':user,
+                'password':password
             }
+        }
+
+        db_conn.insert_new_data(table, data)
+        #st.session_state.config_connectors[name] = conn
+        st.rerun()

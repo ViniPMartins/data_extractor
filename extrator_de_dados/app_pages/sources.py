@@ -1,8 +1,15 @@
 import streamlit as st
+import pandas as pd
 from .connectors.config_connectors import connectors
+from ..utils.database import MockDatabase
+
+DATABASE = 'sources'
+TABLE = 'sources'
 
 # Página principal de seleção da fonte de dados
 def show_sources_page():
+    database = MockDatabase(DATABASE)
+
     st.title("Selecione a Fonte de Dados")
 
     n_connectors = len(connectors.keys())
@@ -17,7 +24,7 @@ def show_sources_page():
             if id_connector + 1 > n_connectors:
                 pass
             else:
-                db = connectors[id_connector]
+                db = connectors[list(connectors.keys())[id_connector]] 
                 with tile:
                     sub_col1, sub_col2, sub_col3 = st.columns([2,5,3])
                     with sub_col1:
@@ -26,9 +33,8 @@ def show_sources_page():
                         sub_col2.caption('### ' + db['nome'])
                     with sub_col2:
                         if sub_col3.button(label=":heavy_plus_sign:", key=str(id_connector) + "-conf", use_container_width=True):
-                            db['config']()
-
-    # Informações adicionais
+                            db['config'](database, TABLE)
+    
     st.markdown("---")
     st.info("Novas fontes de dados estarão disponíveis em breve. Continue acompanhando para novas atualizações!")
 
@@ -36,6 +42,25 @@ def show_sources_page():
     #### Fontes configuradas
     Depois de configurar suas fontes de dados, elas aparecerão aqui.
     """)
+
+    df = database.get_table_data(TABLE)
+    state = st.dataframe(
+        df,
+        use_container_width=True,
+        on_select='rerun',
+        selection_mode='single-row'
+    )
+
+    if st.button("Editar Conexão"):
+        r = state['selection']['rows'][0]
+        conn = connectors[df['type'].iloc[r]]
+        conn['config'](database, TABLE, df['config'].iloc[r])
+
+    try:
+        r = state['selection']['rows'][0]
+        st.write(df['config'].iloc[r])
+    except:
+        pass
 
 if __name__ == '__main__':
     show_sources_page()
