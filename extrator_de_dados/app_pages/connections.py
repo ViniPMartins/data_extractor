@@ -1,15 +1,9 @@
 import streamlit as st
 import time
+import pandas as pd
+from ..utils.database import MockDatabase
 
 # Simulando fontes e destinos configurados
-configured_sources = [
-    {"name": "Postgres - Fonte", "details": {"host": "localhost", "port": 5432, "database": "source_db"}}
-]
-
-configured_destinations = [
-    {"name": "Postgres - Destino", "details": {"host": "localhost", "port": 5432, "database": "destination_db"}}
-]
-
 connections = []
 
 def import_query_connection():
@@ -26,18 +20,21 @@ def configure_connection():
     def disable_button():
         st.session_state.button_connect_disabled = True
 
+    sources = MockDatabase('sources').get_table_data('sources')
+    destiny = MockDatabase('destiny').get_table_data('destiny')
+
     col1, col2 = st.columns(2)
 
     with col1:
-        if configured_sources:
-            source = st.selectbox("Selecione a Fonte de Dados", [s["name"] for s in configured_sources], index=None, placeholder="Selecionar")
+        if isinstance(sources, pd.DataFrame):
+            source = st.selectbox("Selecione a Fonte de Dados", [s for s in sources.index], index=None, placeholder="Selecionar")
         else:
             st.warning("Nenhuma fonte de dados configurada ainda.")
             return
     
     with col2:
-        if configured_destinations:
-            destination = st.selectbox("Selecione o Destino de Dados", [d["name"] for d in configured_destinations], index=None, placeholder="Selecionar")
+        if isinstance(destiny, pd.DataFrame):
+            destination = st.selectbox("Selecione o Destino de Dados", [d for d in destiny.index], index=None, placeholder="Selecionar")
         else:
             st.warning("Nenhum destino de dados configurado ainda.")
             return
