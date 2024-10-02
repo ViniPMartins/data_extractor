@@ -9,6 +9,7 @@ connections = []
 def import_query_connection():
     st.title("Importar query para conexão")
     uploaded_files = st.file_uploader("Selecione uma arquivo .sql para realizar a conexão", type=['sql'])
+    return uploaded_files
 
     # if uploaded_files:
     #     bytes_data = uploaded_files.read()
@@ -20,29 +21,37 @@ def configure_connection():
     def disable_button():
         st.session_state.button_connect_disabled = True
 
+    def check_values():
+        if not source: 
+            st.error("Escolha um fonte de dados")
+            return False
+        elif not destination:
+            st.error("Escolha um destino para os dados")
+            return False
+        elif not uploaded_files:
+            st.error("Escolha um arquivo")
+            return False
+        else:
+            st.success("Todas as informações preenchidas")
+            return True
+
+
     sources = MockDatabase('sources').get_table_data('sources')
     destiny = MockDatabase('destiny').get_table_data('destiny')
 
     col1, col2 = st.columns(2)
 
     with col1:
-        if isinstance(sources, pd.DataFrame):
-            source = st.selectbox("Selecione a Fonte de Dados", [s for s in sources.index], index=None, placeholder="Selecionar")
-        else:
-            st.warning("Nenhuma fonte de dados configurada ainda.")
-            return
+        source = st.selectbox("Selecione a Fonte de Dados", [s for s in sources.index], index=None, placeholder="Selecionar")
     
     with col2:
-        if isinstance(destiny, pd.DataFrame):
-            destination = st.selectbox("Selecione o Destino de Dados", [d for d in destiny.index], index=None, placeholder="Selecionar")
-        else:
-            st.warning("Nenhum destino de dados configurado ainda.")
-            return
+        destination = st.selectbox("Selecione o Destino de Dados", [d for d in destiny.index], index=None, placeholder="Selecionar")
 
-    import_query_connection()
+    st.title("Importar query para conexão")
+    uploaded_files = st.file_uploader("Selecione uma arquivo .sql para realizar a conexão", type=['sql'])
     
     if not st.session_state.button_connect_disabled:
-        if st.button("Conectar", on_click=disable_button, disabled=st.session_state.button_connect_disabled):
+        if check_values() and st.button("Conectar", on_click=disable_button, disabled=st.session_state.button_connect_disabled):
             st.session_state.button_connect_disabled = True
     else:
         with st.status("Validando Conexão", expanded=True):
