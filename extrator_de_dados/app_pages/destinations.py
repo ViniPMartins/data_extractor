@@ -53,15 +53,18 @@ def show_destination_page():
     )
 
     if st.button("Editar Conexão"):
-        r = state['selection']['rows'][0]
-        conn = connectors[df['type'].iloc[r]]
-        conn['config'](database, TABLE, df['config'].iloc[r])
+        r = state['selection']['rows']
+        if len(r) == 0:
+            st.info("Selecione uma conexão para editar!")
+        else:
+            conn = connectors[df['type'].iloc[r[0]]]
+            conn['config'](database, TABLE, df['config'].iloc[r[0]])
+
     try:
         r = state['selection']['rows'][0]
         st.write(df['config'].iloc[r])
     except:
         pass
-
 
 if __name__ == '__main__':
     show_destination_page()
