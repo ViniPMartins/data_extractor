@@ -1,11 +1,5 @@
 import streamlit as st
-
-def check_values(data: dict):
-    for k, v in data.items():
-        if not v:
-            st.error(f"Insira um valor para o parâmetro {k}")
-            return False
-    return True
+from ...utils.validators import check_fill_connectors_values
 
 # Página de configuração de destinos de dados
 @st.dialog("Configuração de Conexão - MySQL", width='large')
@@ -30,7 +24,7 @@ def configure_mysql_connector(db_conn, table, params: dict = {}):
             }
         }
 
-    if check_values(data['config']) and st.button("Conectar"):
+    if check_fill_connectors_values(data['config']) and st.button("Conectar"):
         st.success(f"Conexão configurada: banco de dados {database} em {host}:{port} com o usuário {user}!")
 
         db_conn.insert_new_data(table, data)
