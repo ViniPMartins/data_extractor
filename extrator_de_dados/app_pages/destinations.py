@@ -54,11 +54,11 @@ def show_destination_page():
 
     if st.button("Editar Conexão"):
         r = state['selection']['rows'][0]
-        conn = connectors[df['type'][r]]
+        conn = connectors[df['type'].iloc[r]]
         conn['config'](database, TABLE, df['config'].iloc[r])
     try:
         r = state['selection']['rows'][0]
-        st.write(df['config'][r])
+        st.write(df['config'].iloc[r])
     except:
         pass
 

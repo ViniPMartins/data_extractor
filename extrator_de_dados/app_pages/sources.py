@@ -55,7 +55,6 @@ def show_sources_page():
         r = state['selection']['rows'][0]
         conn = connectors[df['type'].iloc[r]]
         conn['config'](database, TABLE, df['config'].iloc[r])
-
     try:
         r = state['selection']['rows'][0]
         st.write(df['config'].iloc[r])
