@@ -26,12 +26,12 @@ def show_destination_page():
             else:
                 db = connectors[list(connectors.keys())[id_connector]]
                 with tile:
-                    sub_col1, sub_col2, sub_col3 = st.columns([2,5,3])
+                    sub_col1, sub_col2, sub_col3 = st.columns([3,8,3])
                     with sub_col1:
                         sub_col1.image(db['logo'], width=45)
                     with sub_col2:
                         sub_col2.caption('### ' + db['name'])
-                    with sub_col2:
+                    with sub_col3:
                         if sub_col3.button(label=":heavy_plus_sign:", key=str(id_connector) + "-conf", use_container_width=True):
                             db['config'](database, TABLE)
 
