@@ -13,4 +13,4 @@ class MockDatabase:
         return pd.DataFrame(st.session_state[f'config_connectors_{table}']).T
 
     def insert_new_data(self, table: str, data: dict):
-        st.session_state[f'config_connectors_{table}'][data['config']['name']] = data
+        st.session_state[f'config_connectors_{table}'][data['uuid']] = data

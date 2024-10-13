@@ -1,21 +1,24 @@
 import streamlit as st
 from ...utils.validators import check_fill_connectors_values
+import uuid
 
 # Página de configuração de destinos de dados
 @st.dialog("Configuração de Conexão - MySQL", width='large')
-def configure_mysql_connector(db_conn, table, params: dict = {}):
+def configure_mysql_connector(db_conn, table, params: dict = {'config':{}}):
 
+    conn_id = params.get('uuid', uuid.uuid4())
     name = st.text_input("Nome da Conexão", value=params.get('name', ''), placeholder="Ex: database name")
-    host = st.text_input("Host", value=params.get('host', ''), placeholder="ex: localhost")
-    port = st.text_input("Porta", value=params.get('port', ''), placeholder="ex: 5432")
-    database = st.text_input("Banco de Dados", value=params.get('database', ''), placeholder="ex: my_database")
-    user = st.text_input("Usuário", value=params.get('user', ''), placeholder="ex: user")
-    password = st.text_input("Senha", value=params.get('password', ''), type="password")
+    host = st.text_input("Host", value=params['config'].get('host', ''), placeholder="ex: localhost")
+    port = st.text_input("Porta", value=params['config'].get('port', ''), placeholder="ex: 5432")
+    database = st.text_input("Banco de Dados", value=params['config'].get('database', ''), placeholder="ex: my_database")
+    user = st.text_input("Usuário", value=params['config'].get('user', ''), placeholder="ex: user")
+    password = st.text_input("Senha", value=params['config'].get('password', ''), type="password")
 
     data = {
             'type':'mysql',
+            'name':name,
+            'uuid':conn_id,
             'config':{
-                'name':name,
                 'host':host,
                 'port':port,
                 'database':database,

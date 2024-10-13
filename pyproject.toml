@@ -8,6 +8,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.11"
 streamlit = "^1.38.0"
+streamlit-code-editor = "^0.1.21"
 
 
 [build-system]

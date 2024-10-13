@@ -58,11 +58,11 @@ def show_destination_page():
             st.info("Selecione uma conexão para editar!")
         else:
             conn = connectors[df['type'].iloc[r[0]]]
-            conn['config'](database, TABLE, df['config'].iloc[r[0]])
+            conn['config'](database, TABLE, df.iloc[r[0]])
 
     try:
         r = state['selection']['rows'][0]
-        st.write(df['config'].iloc[r])
+        st.write(df.iloc[r])
     except:
         pass
 
