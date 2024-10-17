@@ -14,6 +14,21 @@ with open('extrator_de_dados/app_pages/code_editor_btns.json') as json_button_fi
 DATABASE = 'connections'
 TABLE = 'connections'
 
+@st.dialog("Excluir Conexão")
+def delete_connection(database: MockDatabase, df: pd.DataFrame, r: int):
+    conn_name = df.loc[r]['name']
+    st.write(f'Digite `{conn_name}` abaixo para deletar a conexão')
+    input_name = st.text_input('', label_visibility='hidden')
+
+    if st.button("Deletar"): 
+        if conn_name == input_name:
+            uuid = df.loc[r]['uuid']
+            database.delete_data(TABLE, uuid)
+            st.rerun()
+        else:
+            st.error('O nome da conexão está incorreto')
+
+
 def import_query_connection():
     st.title("Importar query para conexão")
     uploaded_files = st.file_uploader("Selecione uma arquivo .sql para realizar a conexão", type=['sql'])
@@ -42,7 +57,7 @@ def configure_connection(database: MockDatabase, conn_params: dict={}):
             st.success("Todas as informações preenchidas")
             return True
         
-    conn_id = conn_params['uuid'] if conn_params.get('uuid', None) else uuid.uuid4()
+    conn_id = conn_params['uuid'] if conn_params.get('uuid', None) else str(uuid.uuid4())
 
     sources = MockDatabase('sources').get_table_data('sources')
     destiny = MockDatabase('destiny').get_table_data('destiny')
@@ -110,7 +125,7 @@ def configure_connection(database: MockDatabase, conn_params: dict={}):
 
         database.insert_new_data(TABLE, data)
 
-        st.success(f"Conexão estabelecida entre {source} e {destination}!")
+        st.success(f"{conn_name} criada com sucesso!")
         st.session_state.button_connect_disabled = False
         st.session_state.button_close_disabled = True
         
@@ -134,7 +149,7 @@ def show_connections(database: MockDatabase):
                 src = MockDatabase('sources').get_table_data('sources').loc[conn_config['source']]
                 dest = MockDatabase('destiny').get_table_data('destiny').loc[conn_config['destination']]
 
-                name_conn, logo_1, name_1, arrow, logo_2, name_2, edit_btn = st.columns([6,1,4,2,1,4,2])
+                name_conn, logo_1, name_1, arrow, logo_2, name_2, edit_btn, delete_btn = st.columns([6,1,4,2,1,4,2,2])
 
                 with name_conn:
                     st.caption('### ' + connections.loc[conn]['name'])
@@ -151,7 +166,11 @@ def show_connections(database: MockDatabase):
                 with edit_btn:
                     if st.button(label=":material/edit:", key=str(i) + "-edit", use_container_width=True):
                         configure_connection(database, connections.loc[conn])
-                # st.write(f"{i}. Fonte: {conn['source']} -> Destino: {conn['destination']}")
+                with delete_btn:
+                    if st.button(label=":material/delete:", key=str(i) + "-delete", use_container_width=True):
+                        uuid = connections.loc[conn]['uuid']
+                        delete_connection(database, connections, uuid)
+
     else:
         st.info("Nenhuma conexão estabelecida até o momento.")
 

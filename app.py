@@ -1,3 +1,3 @@
 import extrator_de_dados
 
-extrator_de_dados.main()
+extrator_de_dados.run()

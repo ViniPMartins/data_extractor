@@ -6,6 +6,20 @@ import pandas as pd
 DATABASE = 'destiny'
 TABLE = 'destiny'
 
+@st.dialog("Excluir Conexão")
+def delete_connection(database: MockDatabase, df: pd.DataFrame, r: int):
+    conn_name = df.iloc[r]['name'][0]
+    st.write(f'Digite `{conn_name}` abaixo para deletar a conexão')
+    input_name = st.text_input('', label_visibility='hidden')
+
+    if st.button("Deletar"): 
+        if conn_name == input_name:
+            uuid = df.iloc[r]['uuid'][0]
+            database.delete_data(TABLE, uuid)
+            st.rerun()
+        else:
+            st.error('O nome da conexão está incorreto')
+
 # Página principal de seleção do destino de dados
 def show_destination_page():
     database = MockDatabase(DATABASE)
@@ -44,6 +58,10 @@ def show_destination_page():
     Depois de configurar suas fontes de dados, elas aparecerão aqui.
     """)
 
+    col1, col2, col3 = st.columns([2,2,8])
+    edit = col1.button("Editar Conexão")
+    delete = col2.button("Deletar Conexão")
+
     df = database.get_table_data(TABLE)
     state = st.dataframe(
         df,
@@ -52,19 +70,20 @@ def show_destination_page():
         selection_mode='single-row'
     )
 
-    if st.button("Editar Conexão"):
+    if edit:
         r = state['selection']['rows']
         if len(r) == 0:
-            st.info("Selecione uma conexão para editar!")
+            st.toast("Selecione uma conexão para editar!")
         else:
             conn = connectors[df['type'].iloc[r[0]]]
             conn['config'](database, TABLE, df.iloc[r[0]])
 
-    try:
-        r = state['selection']['rows'][0]
-        st.write(df.iloc[r])
-    except:
-        pass
+    if delete:
+        r = state['selection']['rows']
+        if len(r) == 0:
+            st.toast("Selecione uma conexão para excluir!")
+        else:
+            delete_connection(database, df, r)
 
 if __name__ == '__main__':
     show_destination_page()

@@ -5,7 +5,7 @@ from .app_pages.destinations import show_destination_page
 from .app_pages.connections import show_connections_page
 
 # Função principal para o aplicativo Streamlit
-def main():
+def run():
     st.set_page_config(
         page_title="Conector de base de dados",
         layout="wide",
@@ -14,7 +14,7 @@ def main():
 
     pages = [
         st.Page(show_connections_page, title="Connectors", icon=":material/conversion_path:"),
-        st.Page(show_sources_page, title="Connections", icon=":material/download:"),
+        st.Page(show_sources_page, title="Sources", icon=":material/download:"),
         st.Page(show_destination_page, title="Destinations", icon=":material/upload:")
     ]
 
@@ -23,4 +23,4 @@ def main():
 
 # Iniciar o aplicativo Streamlit
 if __name__ == "__main__":
-    main()
+    run()

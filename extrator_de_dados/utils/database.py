@@ -14,3 +14,6 @@ class MockDatabase:
 
     def insert_new_data(self, table: str, data: dict):
         st.session_state[f'config_connectors_{table}'][data['uuid']] = data
+
+    def delete_data(self, table: str, data_id: str | int):
+        st.session_state[f'config_connectors_{table}'].pop(data_id)

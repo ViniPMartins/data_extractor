@@ -6,7 +6,7 @@ import uuid
 @st.dialog("Configuração de Conexão - Postgres", width='large')
 def configure_postgres_connector(db_conn, table, params: dict = {'config':{}}):
 
-    conn_id = params.get('uuid', uuid.uuid4())
+    conn_id = params.get('uuid', str(uuid.uuid4()))
     name = st.text_input("Nome da Conexão", value=params.get('name', ''), placeholder="Ex: database name")
     host = st.text_input("Host", value=params['config'].get('host', ''), placeholder="ex: localhost")
     port = st.text_input("Porta", value=params['config'].get('port', ''), placeholder="ex: 5432")

@@ -6,7 +6,7 @@ import uuid
 @st.dialog("Configuração de Conexão - CSV", width='large')
 def configure_csv_connector(db_conn, table, params: dict = {'config':{}}):
 
-    conn_id = params.get('uuid', uuid.uuid4())
+    conn_id = params.get('uuid', str(uuid.uuid4()))
     name = st.text_input("Nome da Conexão", value=params.get('name', ''), placeholder="Ex: Arquivo CSV")
     path = st.text_input("File Path", value=params['config'].get('path', ''), placeholder="ex: C://usuario/meu_arquivo.csv")
     data = {
