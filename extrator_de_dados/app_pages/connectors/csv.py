@@ -4,22 +4,30 @@ import uuid
 
 # Página de configuração de destinos de dados
 @st.dialog("Configuração de Conexão - CSV", width='large')
-def configure_csv_connector(db_conn, table, params: dict = {'config':{}}):
+def configure_csv_connector(db_conn, table, params: dict = {'config':'{}'}, id: str = None):
 
-    conn_id = params.get('uuid', str(uuid.uuid4()))
+    configs: dict = eval(params['config'])
+
+    conn_id = id if id else str(uuid.uuid4())
     name = st.text_input("Nome da Conexão", value=params.get('name', ''), placeholder="Ex: Arquivo CSV")
-    path = st.text_input("File Path", value=params['config'].get('path', ''), placeholder="ex: C://usuario/meu_arquivo.csv")
-    data = {
+    path = st.text_input("File Path", value=configs.get('path', ''), placeholder="ex: C://usuario/meu_arquivo.csv")
+    
+    config = {
+        'path':path
+    }
+
+    data = [{
         'type':'csv',
         'name':name,
         'uuid':conn_id,
-        'config':{
-            'path':path
-        }
-    }
+        'config':str(config)
+    }]
     
-    if check_fill_connectors_values(data['config']) and st.button("Conectar"):
+    if check_fill_connectors_values(config) and st.button("Conectar"):
         st.success(f"Conexão configurada: Conexão com arquivo {path} configurada")
 
-        db_conn.insert_new_data(table, data)
+        if id:
+            db_conn.update_data(table, data)
+        else:
+            db_conn.insert_new_data(table, data)
         st.rerun()

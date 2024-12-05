@@ -1,29 +1,29 @@
 import streamlit as st
 import time
 import pandas as pd
-from ..utils.database import MockDatabase
+from ..utils.database import InternalDataBase
 from .connectors.config_connectors import connectors
 from io import StringIO
 from code_editor import code_editor
 import json
 import uuid
+from typing import Optional
 
 with open('extrator_de_dados/app_pages/code_editor_btns.json') as json_button_file:
     custom_buttons = json.load(json_button_file)
 
-DATABASE = 'connections'
+DATABASE = 'internal'
 TABLE = 'connections'
 
 @st.dialog("Excluir Conexão")
-def delete_connection(database: MockDatabase, df: pd.DataFrame, r: int):
-    conn_name = df.loc[r]['name']
+def delete_connection(database: InternalDataBase, df: pd.DataFrame, id: int):
+    conn_name = df.loc[id]['name']
     st.write(f'Digite `{conn_name}` abaixo para deletar a conexão')
     input_name = st.text_input('', label_visibility='hidden')
 
     if st.button("Deletar"): 
-        if conn_name == input_name:
-            uuid = df.loc[r]['uuid']
-            database.delete_data(TABLE, uuid)
+        if conn_name == input_name: 
+            database.delete_data(TABLE, id)
             st.rerun()
         else:
             st.error('O nome da conexão está incorreto')
@@ -35,7 +35,7 @@ def import_query_connection():
     return uploaded_files
 
 @st.dialog("Configuração de Conexão", width='large')
-def configure_connection(database: MockDatabase, conn_params: dict={}):
+def configure_connection(database: InternalDataBase, conn_params: Optional[dict] = {} ):
 
     def disable_button():
         st.session_state.button_connect_disabled = True
@@ -56,11 +56,11 @@ def configure_connection(database: MockDatabase, conn_params: dict={}):
         else:
             st.success("Todas as informações preenchidas")
             return True
-        
-    conn_id = conn_params['uuid'] if conn_params.get('uuid', None) else str(uuid.uuid4())
+    
+    conn_id = conn_params.name if isinstance(conn_params, pd.Series) else str(uuid.uuid4())
 
-    sources = MockDatabase('sources').get_table_data('sources')
-    destiny = MockDatabase('destiny').get_table_data('destiny')
+    sources = InternalDataBase(DATABASE).get_table_data('sources')
+    destiny = InternalDataBase(DATABASE).get_table_data('destiny')
 
     def name_source_connection(options):
         return sources.loc[options]['name']
@@ -71,8 +71,8 @@ def configure_connection(database: MockDatabase, conn_params: dict={}):
     sources_list = list(sources.index) if len(sources) > 0 else {}
     destination_list = list(destiny.index) if len(destiny) > 0 else {}
 
-    idx_source = sources_list.index(conn_params['config']['source']) if conn_params.get('config', None) else None
-    idx_destination = destination_list.index(conn_params['config']['destination']) if conn_params.get('config', None) else None
+    idx_source = sources_list.index(conn_params['source']) if conn_params.get('source', None) else None
+    idx_destination = destination_list.index(conn_params['destination']) if conn_params.get('destination', None) else None
 
     conn_name = st.text_input("Insira o nome da conexão", value=conn_params.get('name', ''), placeholder="Nome da conexão")
     col1, col2 = st.columns(2)
@@ -83,8 +83,8 @@ def configure_connection(database: MockDatabase, conn_params: dict={}):
         destination = st.selectbox("Selecione o Destino de Dados", destination_list, format_func=name_destination_connection, index=idx_destination, placeholder="Selecionar")
 
     st.title("Importar query para conexão")
-    if conn_params.get('config', None):
-        editor = code_editor(conn_params['config']['file'], lang='sql', buttons=custom_buttons, allow_reset=True)
+    if conn_params.get('file', None):
+        editor = code_editor(conn_params['file'], lang='sql', buttons=custom_buttons, allow_reset=True)
         st.write(editor)
 
         if editor['type'] == "submit" and len(editor['text']) != 0:
@@ -113,17 +113,18 @@ def configure_connection(database: MockDatabase, conn_params: dict={}):
             st.write("Validando Query SQL")
             time.sleep(1)
         
-        data = {
+        data = [{
             'uuid':conn_id,
             'name':conn_name,
-            'config':{
-                "source": source, 
-                "destination": destination, 
-                "file":query
-            }
-        }
+            "source": source, 
+            "destination": destination, 
+            "file":query
+        }]
 
-        database.insert_new_data(TABLE, data)
+        if isinstance(conn_params, pd.Series):
+            database.update_data(TABLE, data)
+        else:
+            database.insert_new_data(TABLE, data)
 
         st.success(f"{conn_name} criada com sucesso!")
         st.session_state.button_connect_disabled = False
@@ -136,18 +137,19 @@ def configure_connection(database: MockDatabase, conn_params: dict={}):
 
 
 # Função para exibir as conexões já estabelecidas
-def show_connections(database: MockDatabase):
+def show_connections(database: InternalDataBase):
 
     st.header("Conexões Estabelecidas")
 
     connections = database.get_table_data(TABLE)
 
-    if len(connections.index) > 0:
+    if connections is not None:
         for i, conn in enumerate(connections.index, 0):
-            conn_config = connections.loc[conn]['config']
+            current_connection = connections.loc[conn]
+
             with st.container(height=78, border=True) as tile:
-                src = MockDatabase('sources').get_table_data('sources').loc[conn_config['source']]
-                dest = MockDatabase('destiny').get_table_data('destiny').loc[conn_config['destination']]
+                src = InternalDataBase(DATABASE).get_table_data('sources').loc[current_connection['source']]
+                dest = InternalDataBase(DATABASE).get_table_data('destiny').loc[current_connection['destination']]
 
                 name_conn, logo_1, name_1, arrow, logo_2, name_2, edit_btn, delete_btn = st.columns([6,1,4,2,1,4,2,2])
 
@@ -165,18 +167,17 @@ def show_connections(database: MockDatabase):
                     st.caption('### ' + dest['name'])
                 with edit_btn:
                     if st.button(label=":material/edit:", key=str(i) + "-edit", use_container_width=True):
-                        configure_connection(database, connections.loc[conn])
+                        configure_connection(database, current_connection)
                 with delete_btn:
                     if st.button(label=":material/delete:", key=str(i) + "-delete", use_container_width=True):
-                        uuid = connections.loc[conn]['uuid']
-                        delete_connection(database, connections, uuid)
+                        delete_connection(database, connections, conn)
 
     else:
         st.info("Nenhuma conexão estabelecida até o momento.")
 
 # Função principal da página de conexões
 def show_connections_page():
-    database = MockDatabase(DATABASE)
+    database = InternalDataBase(DATABASE)
     
     if 'button_connect_disabled' not in st.session_state:
         st.session_state.button_connect_disabled = False

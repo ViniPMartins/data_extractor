@@ -1,28 +1,27 @@
 import streamlit as st
-from ..utils.database import MockDatabase
+from ..utils.database import InternalDataBase
 from .connectors.config_connectors import connectors
 import pandas as pd
 
-DATABASE = 'destiny'
+DATABASE = 'internal'
 TABLE = 'destiny'
 
 @st.dialog("Excluir Conexão")
-def delete_connection(database: MockDatabase, df: pd.DataFrame, r: int):
-    conn_name = df.iloc[r]['name'][0]
+def delete_connection(database: InternalDataBase, df: pd.DataFrame, id: str):
+    conn_name = df.loc[id]['name']
     st.write(f'Digite `{conn_name}` abaixo para deletar a conexão')
     input_name = st.text_input('', label_visibility='hidden')
 
     if st.button("Deletar"): 
         if conn_name == input_name:
-            uuid = df.iloc[r]['uuid'][0]
-            database.delete_data(TABLE, uuid)
+            database.delete_data(TABLE, id)
             st.rerun()
         else:
             st.error('O nome da conexão está incorreto')
 
 # Página principal de seleção do destino de dados
 def show_destination_page():
-    database = MockDatabase(DATABASE)
+    database = InternalDataBase(DATABASE)
 
     st.title("Selecione o Destino dos Dados")
 
@@ -71,19 +70,21 @@ def show_destination_page():
     )
 
     if edit:
-        r = state['selection']['rows']
+        r = state['selection']['rows']     
         if len(r) == 0:
             st.toast("Selecione uma conexão para editar!")
         else:
+            uuid = df.iloc[r].index[0]
             conn = connectors[df['type'].iloc[r[0]]]
-            conn['config'](database, TABLE, df.iloc[r[0]])
+            conn['config'](database, TABLE, df.iloc[r[0]], uuid)
 
     if delete:
         r = state['selection']['rows']
         if len(r) == 0:
             st.toast("Selecione uma conexão para excluir!")
         else:
-            delete_connection(database, df, r)
+            uuid = df.iloc[r].index[0]
+            delete_connection(database, df, uuid)
 
 if __name__ == '__main__':
     show_destination_page()

@@ -9,7 +9,12 @@ readme = "README.md"
 python = "^3.11"
 streamlit = "^1.38.0"
 streamlit-code-editor = "^0.1.21"
+duckdb = "^1.1.2"
+sqlalchemy = "^2.0.36"
 
+
+[tool.poetry.group.dev.dependencies]
+ipykernel = "^6.29.5"
 
 [build-system]
 requires = ["poetry-core"]
