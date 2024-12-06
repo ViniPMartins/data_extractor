@@ -7,7 +7,7 @@ class AbstractEngine(ABC):
         ...
 
     @abstractmethod
-    def engine(self):
+    def _create_connection_url(self):
         ...
 
     @abstractmethod
