@@ -5,10 +5,10 @@ import pandas as pd
 class PostgresEngine(AbstractEngine):
 
     def __init__(self, config):
-        self.url_engine = self.__engine(config)
+        self.url_engine = self.engine(config)
 
     def engine(self, config):
-        url = f"postgresql+psycopg2://{config.user}:{config.password}@{config.host}:{config.port}/{config.database}"
+        url = f"postgresql+psycopg2://{config['user']}:{config['password']}@{config['host']}:{config['port']}/{config['database']}"
         return url
     
     def connect(self):
@@ -17,7 +17,6 @@ class PostgresEngine(AbstractEngine):
             return self.engine.connect()
         except Exception as e:
             print(f"Não foi possível conectar: {e}")
-            return None
 
     def execute_query(self, query):
         """Executa a query em um banco de dados de origem e retorna os resultados como um DataFrame."""
