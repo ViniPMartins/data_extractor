@@ -1,5 +1,7 @@
 from .postgres import PostgresEngine
+from .mysql import MysqlEngine
 
 engines = {
-    'postgres': PostgresEngine
+    'postgres': PostgresEngine,
+    'mysql': MysqlEngine
 }

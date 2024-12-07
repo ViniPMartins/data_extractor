@@ -4,7 +4,7 @@ from sqlalchemy.exc import SQLAlchemyError
 import pandas as pd
 
 
-class PostgresEngine(AbstractEngine):
+class MysqlEngine(AbstractEngine):
     """
     Implementação de um motor de banco de dados para PostgreSQL.
     """
@@ -23,7 +23,7 @@ class PostgresEngine(AbstractEngine):
         Gera a URL de conexão para o banco de dados PostgreSQL.
         """
         return (
-            f"postgresql+psycopg2://{config['user']}:{config['password']}@"
+            f"mysql+pymysql://{config['user']}:{config['password']}@"
             f"{config['host']}:{config['port']}/{config['database']}"
         )
 

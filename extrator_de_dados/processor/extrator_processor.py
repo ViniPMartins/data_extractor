@@ -24,7 +24,7 @@ def run_processor(database: InternalDataBase, connection_id: str):
     
     ## Obter a query
     query = current_connection['file']
-    table = ''
+    table = current_connection['table_name']
 
     ## Roda a query no banco de origem -> retorna um dataframe
     source_engine = engines[source_type](source_config)
@@ -33,6 +33,8 @@ def run_processor(database: InternalDataBase, connection_id: str):
     # ## Insere os dados no Banco de destino
     dest_engine = engines[dest_type](dest_config)
     dest_engine.insert_data(table, result)
+
+    return True
 
 if __name__ == '__main__':
     run_processor("123")
