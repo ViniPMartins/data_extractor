@@ -8,6 +8,7 @@ from code_editor import code_editor
 import json
 import uuid
 from typing import Optional
+from ..processor.extrator_processor import run_processor
 
 with open('extrator_de_dados/app_pages/code_editor_btns.json') as json_button_file:
     custom_buttons = json.load(json_button_file)
@@ -50,6 +51,9 @@ def configure_connection(database: InternalDataBase, conn_params: Optional[dict]
         elif not destination:
             st.error("Escolha um destino para os dados")
             return False
+        elif not table_name:
+            st.error("Escolha um destino para os dados")
+            return False
         elif not query:
             st.error("Salve um query para realizar a extração")
             return False
@@ -82,9 +86,11 @@ def configure_connection(database: InternalDataBase, conn_params: Optional[dict]
     with col2:
         destination = st.selectbox("Selecione o Destino de Dados", destination_list, format_func=name_destination_connection, index=idx_destination, placeholder="Selecionar")
 
+    table_name = st.text_input("Escolha um nome para a tabela", value=conn_params.get('table_name', ''), placeholder="Nome da tabela")
+
     st.title("Importar query para conexão")
-    if conn_params.get('file', None):
-        editor = code_editor(conn_params['file'], lang='sql', buttons=custom_buttons, allow_reset=True)
+    if st.toggle("Code Editor", value=True if conn_params.get('file', None) else False):
+        editor = code_editor(conn_params.get('file', ''), lang='sql', buttons=custom_buttons, allow_reset=True)
         st.write(editor)
 
         if editor['type'] == "submit" and len(editor['text']) != 0:
@@ -116,9 +122,10 @@ def configure_connection(database: InternalDataBase, conn_params: Optional[dict]
         data = [{
             'uuid':conn_id,
             'name':conn_name,
-            "source": source, 
-            "destination": destination, 
-            "file":query
+            'source': source, 
+            'destination': destination,
+            'table_name':table_name,
+            'file':query
         }]
 
         if isinstance(conn_params, pd.Series):
@@ -139,7 +146,8 @@ def configure_connection(database: InternalDataBase, conn_params: Optional[dict]
 # Função para exibir as conexões já estabelecidas
 def show_connections(database: InternalDataBase):
 
-    st.header("Conexões Estabelecidas")
+    header_container = st.container()
+    header_container.header("Conexões Estabelecidas")
 
     connections = database.get_table_data(TABLE)
 
@@ -151,7 +159,7 @@ def show_connections(database: InternalDataBase):
                 src = InternalDataBase(DATABASE).get_table_data('sources').loc[current_connection['source']]
                 dest = InternalDataBase(DATABASE).get_table_data('destiny').loc[current_connection['destination']]
 
-                name_conn, logo_1, name_1, arrow, logo_2, name_2, edit_btn, delete_btn = st.columns([6,1,4,2,1,4,2,2])
+                name_conn, logo_1, name_1, arrow, logo_2, name_2, delete_btn, edit_btn, play_btn = st.columns([6,1,4,2,1,4,2,2,2])
 
                 with name_conn:
                     st.caption('### ' + connections.loc[conn]['name'])
@@ -165,13 +173,21 @@ def show_connections(database: InternalDataBase):
                     st.image(connectors[dest['type']]['logo'], width=45)
                 with name_2:
                     st.caption('### ' + dest['name'])
-                with edit_btn:
-                    if st.button(label=":material/edit:", key=str(i) + "-edit", use_container_width=True):
-                        configure_connection(database, current_connection)
                 with delete_btn:
                     if st.button(label=":material/delete:", key=str(i) + "-delete", use_container_width=True):
                         delete_connection(database, connections, conn)
-
+                with edit_btn:
+                    if st.button(label=":material/edit:", key=str(i) + "-edit", use_container_width=True):
+                        configure_connection(database, current_connection)
+                with play_btn:
+                    if st.button(label=":material/play_arrow:", key=str(i) + "-play", use_container_width=True):
+                        try:
+                            run_processor(database, conn)
+                            header_container.success("Extração efetuada com sucesso")
+                        except Exception as e:
+                            header_container.error("Não foi possível fazer extração")
+                            print(e)
+                
     else:
         st.info("Nenhuma conexão estabelecida até o momento.")
 
